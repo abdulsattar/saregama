@@ -1,0 +1,12 @@
+{
+  "jspm": {
+    "directories": {
+      "lib": ".",
+      "packages": "jspm_packages"
+    }
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-server-livereload": "^1.0.2"
+  }
+}
