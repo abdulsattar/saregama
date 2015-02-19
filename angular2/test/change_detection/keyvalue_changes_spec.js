@@ -5,7 +5,7 @@ import {describe,
   expect,
   beforeEach,
   afterEach} from 'angular2/test_lib';
-import {KeyValueChanges} from 'angular2/src/change_detection/keyvalue_changes';
+import {KeyValueChanges} from 'angular2/src/change_detection/pipes/keyvalue_changes';
 import {NumberWrapper,
   isJsObject} from 'angular2/src/facade/lang';
 import {MapWrapper} from 'angular2/src/facade/collection';

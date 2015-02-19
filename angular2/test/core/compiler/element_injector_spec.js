@@ -26,7 +26,6 @@ import {Injector,
   Inject,
   bind} from 'angular2/di';
 import {View} from 'angular2/src/core/compiler/view';
-import {ProtoRecordRange} from 'angular2/change_detection';
 import {ViewContainer} from 'angular2/src/core/compiler/view_container';
 import {NgElement} from 'angular2/src/core/dom/element';
 import {LightDom,

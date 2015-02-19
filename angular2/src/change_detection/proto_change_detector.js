@@ -26,15 +26,13 @@ import {AccessMember,
   LiteralPrimitive,
   MethodCall,
   PrefixNot} from './parser/ast';
-import {ContextWithVariableBindings} from './parser/context_with_variable_bindings';
 import {ChangeRecord,
   ChangeDispatcher,
   ChangeDetector} from './interfaces';
 import {ChangeDetectionUtil} from './change_detection_util';
 import {DynamicChangeDetector} from './dynamic_change_detector';
 import {ChangeDetectorJITGenerator} from './change_detection_jit_generator';
-import {ArrayChanges} from './array_changes';
-import {KeyValueChanges} from './keyvalue_changes';
+import {PipeRegistry} from './pipes/pipe_registry';
 import {coalesce} from './coalesce';
 export const RECORD_TYPE_SELF = 0;
 export const RECORD_TYPE_CONST = 1;
@@ -81,8 +79,9 @@ Object.defineProperty(ProtoChangeDetector.prototype.instantiate, "parameters", {
     return [[assert.type.any], [Map]];
   }});
 export class DynamicProtoChangeDetector extends ProtoChangeDetector {
-  constructor() {
+  constructor(pipeRegistry) {
     super();
+    this._pipeRegistry = pipeRegistry;
     this._records = null;
     this._recordBuilder = new ProtoRecordBuilder();
   }
@@ -91,7 +90,7 @@ export class DynamicProtoChangeDetector extends ProtoChangeDetector {
   }
   instantiate(dispatcher, formatters) {
     this._createRecordsIfNecessary();
-    return new DynamicChangeDetector(dispatcher, formatters, this._records);
+    return new DynamicChangeDetector(dispatcher, formatters, this._pipeRegistry, this._records);
   }
   _createRecordsIfNecessary() {
     if (isBlank(this._records)) {
@@ -100,6 +99,9 @@ export class DynamicProtoChangeDetector extends ProtoChangeDetector {
     }
   }
 }
+Object.defineProperty(DynamicProtoChangeDetector, "parameters", {get: function() {
+    return [[PipeRegistry]];
+  }});
 Object.defineProperty(DynamicProtoChangeDetector.prototype.addAst, "parameters", {get: function() {
     return [[AST], [assert.type.any], [assert.type.any], [assert.type.boolean]];
   }});
@@ -108,8 +110,9 @@ Object.defineProperty(DynamicProtoChangeDetector.prototype.instantiate, "paramet
   }});
 var _jitProtoChangeDetectorClassCounter = 0;
 export class JitProtoChangeDetector extends ProtoChangeDetector {
-  constructor() {
+  constructor(pipeRegistry) {
     super();
+    this._pipeRegistry = pipeRegistry;
     this._factory = null;
     this._recordBuilder = new ProtoRecordBuilder();
   }
@@ -118,7 +121,7 @@ export class JitProtoChangeDetector extends ProtoChangeDetector {
   }
   instantiate(dispatcher, formatters) {
     this._createFactoryIfNecessary();
-    return this._factory(dispatcher, formatters);
+    return this._factory(dispatcher, formatters, this._pipeRegistry);
   }
   _createFactoryIfNecessary() {
     if (isBlank(this._factory)) {

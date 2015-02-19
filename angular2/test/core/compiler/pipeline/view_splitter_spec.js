@@ -5,7 +5,6 @@ import {describe,
   iit,
   ddescribe,
   el} from 'angular2/test_lib';
-import {isPresent} from 'angular2/src/facade/lang';
 import {MapWrapper} from 'angular2/src/facade/collection';
 import {ViewSplitter} from 'angular2/src/core/compiler/pipeline/view_splitter';
 import {CompilePipeline} from 'angular2/src/core/compiler/pipeline/compile_pipeline';

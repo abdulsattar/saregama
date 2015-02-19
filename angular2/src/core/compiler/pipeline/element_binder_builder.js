@@ -16,14 +16,7 @@ import {ListWrapper,
 import {reflector} from 'angular2/src/reflection/reflection';
 import {Parser,
   ProtoChangeDetector} from 'angular2/change_detection';
-import {Component,
-  Directive} from '../../annotations/annotations';
 import {DirectiveMetadata} from '../directive_metadata';
-import {ProtoView,
-  ElementPropertyMemento,
-  DirectivePropertyMemento} from '../view';
-import {ProtoElementInjector} from '../element_injector';
-import {ElementBinder} from '../element_binder';
 import {CompileStep} from './compile_step';
 import {CompileElement} from './compile_element';
 import {CompileControl} from './compile_control';
@@ -171,22 +164,22 @@ export class ElementBinderBuilder extends CompileStep {
       if (isBlank(annotation.bind))
         continue;
       var _this = this;
-      StringMapWrapper.forEach(annotation.bind, function(dirProp, elProp) {
+      StringMapWrapper.forEach(annotation.bind, function(elProp, dirProp) {
         var expression = isPresent(compileElement.propertyBindings) ? MapWrapper.get(compileElement.propertyBindings, elProp) : null;
         if (isBlank(expression)) {
           var attributeValue = MapWrapper.get(compileElement.attrs(), elProp);
           if (isPresent(attributeValue)) {
             expression = _this._parser.wrapLiteralPrimitive(attributeValue, _this._compilationUnit);
-          } else {
-            throw new BaseException("No element binding found for property '" + elProp + "' which is required by directive '" + stringify(directive.type) + "'");
           }
         }
-        var len = dirProp.length;
-        var dirBindingName = dirProp;
-        var isContentWatch = dirProp[len - 2] === '[' && dirProp[len - 1] === ']';
-        if (isContentWatch)
-          dirBindingName = dirProp.substring(0, len - 2);
-        protoView.bindDirectiveProperty(directiveIndex, expression, dirBindingName, reflector.setter(dirBindingName), isContentWatch);
+        if (isPresent(expression)) {
+          var len = dirProp.length;
+          var dirBindingName = dirProp;
+          var isContentWatch = dirProp[len - 2] === '[' && dirProp[len - 1] === ']';
+          if (isContentWatch)
+            dirBindingName = dirProp.substring(0, len - 2);
+          protoView.bindDirectiveProperty(directiveIndex, expression, dirBindingName, reflector.setter(dirBindingName), isContentWatch);
+        }
       });
     }
   }

@@ -10,8 +10,9 @@ import {describe,
   proxy} from 'angular2/test_lib';
 import {MapWrapper,
   ListWrapper} from 'angular2/src/facade/collection';
-import {PromiseWrapper} from 'angular2/src/facade/async';
-import {IMPLEMENTS} from 'angular2/src/facade/lang';
+import {IMPLEMENTS,
+  Date,
+  DateWrapper} from 'angular2/src/facade/lang';
 class TestObj {
   constructor(prop) {
     this.prop = prop;
@@ -34,6 +35,9 @@ export function main() {
         var falseActual = new TestObj(new TestObj({'one': [1, 3]}));
         expect(actual).toEqual(expected);
         expect(falseActual).not.toEqual(expected);
+      });
+      it('should structurally compare objects with private and static fields', () => {
+        expect(DateWrapper.fromMillis(1)).toEqual(DateWrapper.fromMillis(1));
       });
       it('should work for arrays of string maps', () => {
         expect([{'a': 'b'}]).toEqual([{'a': 'b'}]);

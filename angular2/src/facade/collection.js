@@ -4,6 +4,7 @@ import {int,
 export var List = global.Array;
 export var Map = global.Map;
 export var Set = global.Set;
+export var StringMap = global.Object;
 export class MapWrapper {
   static create() {
     return new Map();

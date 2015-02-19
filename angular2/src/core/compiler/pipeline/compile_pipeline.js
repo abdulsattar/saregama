@@ -7,7 +7,6 @@ import {Element,
 import {CompileElement} from './compile_element';
 import {CompileControl} from './compile_control';
 import {CompileStep} from './compile_step';
-import {DirectiveMetadata} from '../directive_metadata';
 export class CompilePipeline {
   constructor(steps) {
     this._control = new CompileControl(steps);

@@ -7,7 +7,6 @@ import {describe,
   el} from 'angular2/test_lib';
 import {isPresent,
   isBlank} from 'angular2/src/facade/lang';
-import {DOM} from 'angular2/src/facade/dom';
 import {List,
   ListWrapper,
   MapWrapper} from 'angular2/src/facade/collection';

@@ -2,6 +2,7 @@ var _global = typeof window === 'undefined' ? global : window;
 export {_global as global};
 export var Type = Function;
 export var Math = _global.Math;
+export var Date = _global.Date;
 var assertionsEnabled_ = typeof assert !== 'undefined';
 var int;
 if (assertionsEnabled_) {
@@ -240,6 +241,14 @@ export function print(obj) {
   }
 }
 export var Json = _global.JSON;
+export class DateWrapper {
+  static fromMillis(ms) {
+    return new Date(ms);
+  }
+  static now() {
+    return new Date();
+  }
+}
 
 //# sourceMappingURL=/Users/abdulsat/Projects/angular/modules/angular2/src/facade/lang.map
 

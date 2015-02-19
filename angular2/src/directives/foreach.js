@@ -1,27 +1,24 @@
-import {Viewport,
-  onChange} from 'angular2/src/core/annotations/annotations';
-import {OnChange} from 'angular2/src/core/compiler/interfaces';
+import {Viewport} from 'angular2/src/core/annotations/annotations';
 import {ViewContainer} from 'angular2/src/core/compiler/view_container';
 import {View} from 'angular2/src/core/compiler/view';
 import {isPresent,
   isBlank} from 'angular2/src/facade/lang';
 import {ListWrapper} from 'angular2/src/facade/collection';
-export class Foreach extends OnChange {
+export class Foreach {
   constructor(viewContainer) {
     super();
     this.viewContainer = viewContainer;
   }
-  onChange(changes) {
-    var iteratorChanges = changes['iterable'];
-    if (isBlank(iteratorChanges) || isBlank(iteratorChanges.currentValue)) {
+  set iterableChanges(changes) {
+    if (isBlank(changes)) {
       this.viewContainer.clear();
       return ;
     }
     var recordViewTuples = [];
-    iteratorChanges.currentValue.forEachRemovedItem((removedRecord) => ListWrapper.push(recordViewTuples, new RecordViewTuple(removedRecord, null)));
-    iteratorChanges.currentValue.forEachMovedItem((movedRecord) => ListWrapper.push(recordViewTuples, new RecordViewTuple(movedRecord, null)));
+    changes.forEachRemovedItem((removedRecord) => ListWrapper.push(recordViewTuples, new RecordViewTuple(removedRecord, null)));
+    changes.forEachMovedItem((movedRecord) => ListWrapper.push(recordViewTuples, new RecordViewTuple(movedRecord, null)));
     var insertTuples = Foreach.bulkRemove(recordViewTuples, this.viewContainer);
-    iteratorChanges.currentValue.forEachAddedItem((addedRecord) => ListWrapper.push(insertTuples, new RecordViewTuple(addedRecord, null)));
+    changes.forEachAddedItem((addedRecord) => ListWrapper.push(insertTuples, new RecordViewTuple(addedRecord, null)));
     Foreach.bulkInsert(insertTuples, this.viewContainer);
     for (var i = 0; i < insertTuples.length; i++) {
       this.perViewChange(insertTuples[i].view, insertTuples[i].record);
@@ -61,8 +58,7 @@ export class Foreach extends OnChange {
 Object.defineProperty(Foreach, "annotations", {get: function() {
     return [new Viewport({
       selector: '[foreach][in]',
-      lifecycle: [onChange],
-      bind: {'in': 'iterable[]'}
+      bind: {'iterableChanges[]': 'in'}
     })];
   }});
 Object.defineProperty(Foreach, "parameters", {get: function() {

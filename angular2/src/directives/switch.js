@@ -2,7 +2,6 @@ import {Decorator,
   Viewport} from 'angular2/src/core/annotations/annotations';
 import {ViewContainer} from 'angular2/src/core/compiler/view_container';
 import {NgElement} from 'angular2/src/core/dom/element';
-import {DOM} from 'angular2/src/facade/dom';
 import {isPresent,
   isBlank,
   normalizeBlank} from 'angular2/src/facade/lang';
@@ -84,7 +83,7 @@ export class Switch {
 Object.defineProperty(Switch, "annotations", {get: function() {
     return [new Decorator({
       selector: '[switch]',
-      bind: {'switch': 'value'}
+      bind: {'value': 'switch'}
     })];
   }});
 Object.defineProperty(Switch.prototype._onWhenValueChanged, "parameters", {get: function() {
@@ -113,7 +112,7 @@ export class SwitchWhen {
 Object.defineProperty(SwitchWhen, "annotations", {get: function() {
     return [new Viewport({
       selector: '[switch-when]',
-      bind: {'switch-when': 'when'}
+      bind: {'when': 'switch-when'}
     })];
   }});
 Object.defineProperty(SwitchWhen, "parameters", {get: function() {

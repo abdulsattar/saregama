@@ -27,6 +27,8 @@ import {Decorator,
   Component,
   Viewport} from 'angular2/src/core/annotations/annotations';
 import {Template} from 'angular2/src/core/annotations/template';
+import {Parent,
+  Ancestor} from 'angular2/src/core/annotations/visibility';
 import {ViewContainer} from 'angular2/src/core/compiler/view_container';
 export function main() {
   describe('integration tests', function() {
@@ -120,6 +122,16 @@ export function main() {
           var elInj = view.elementInjectors[0];
           expect(elInj.get(MyDir).dirProp).toEqual('Hello World!');
           expect(elInj.get(ChildComp).dirProp).toEqual(null);
+          done();
+        });
+      });
+      it('should support directives where a binding attribute is not given', function(done) {
+        tplResolver.setTemplate(MyComp, new Template({
+          inline: '<p my-dir></p>',
+          directives: [MyDir]
+        }));
+        compiler.compile(MyComp).then((pv) => {
+          createView(pv);
           done();
         });
       });
@@ -220,6 +232,35 @@ export function main() {
           done();
         });
       });
+      it('should create a component that injects a @Parent', (done) => {
+        tplResolver.setTemplate(MyComp, new Template({
+          inline: '<some-directive><cmp-with-parent #child></cmp-with-parent></some-directive>',
+          directives: [SomeDirective, CompWithParent]
+        }));
+        compiler.compile(MyComp).then((pv) => {
+          createView(pv);
+          var childComponent = view.contextWithLocals.get('child');
+          expect(childComponent.myParent).toBeAnInstanceOf(SomeDirective);
+          done();
+        });
+      });
+      it('should create a component that injects an @Ancestor', (done) => {
+        tplResolver.setTemplate(MyComp, new Template({
+          inline: `
+            <some-directive>
+              <p>
+                <cmp-with-ancestor #child></cmp-with-ancestor>
+              </p>
+            </some-directive>`,
+          directives: [SomeDirective, CompWithAncestor]
+        }));
+        compiler.compile(MyComp).then((pv) => {
+          createView(pv);
+          var childComponent = view.contextWithLocals.get('child');
+          expect(childComponent.myAncestor).toBeAnInstanceOf(SomeDirective);
+          done();
+        });
+      });
     });
   });
 }
@@ -231,7 +272,7 @@ class MyDir {
 Object.defineProperty(MyDir, "annotations", {get: function() {
     return [new Decorator({
       selector: '[my-dir]',
-      bind: {'elprop': 'dirProp'}
+      bind: {'dirProp': 'elprop'}
     })];
   }});
 class PushBasedComp {
@@ -279,6 +320,38 @@ Object.defineProperty(ChildComp, "annotations", {get: function() {
   }});
 Object.defineProperty(ChildComp, "parameters", {get: function() {
     return [[MyService]];
+  }});
+class SomeDirective {}
+Object.defineProperty(SomeDirective, "annotations", {get: function() {
+    return [new Decorator({selector: 'some-directive'})];
+  }});
+class CompWithParent {
+  constructor(someComp) {
+    this.myParent = someComp;
+  }
+}
+Object.defineProperty(CompWithParent, "annotations", {get: function() {
+    return [new Component({selector: 'cmp-with-parent'}), new Template({
+      inline: '<p>Component with an injected parent</p>',
+      directives: [SomeDirective]
+    })];
+  }});
+Object.defineProperty(CompWithParent, "parameters", {get: function() {
+    return [[SomeDirective, new Parent()]];
+  }});
+class CompWithAncestor {
+  constructor(someComp) {
+    this.myAncestor = someComp;
+  }
+}
+Object.defineProperty(CompWithAncestor, "annotations", {get: function() {
+    return [new Component({selector: 'cmp-with-ancestor'}), new Template({
+      inline: '<p>Component with an injected ancestor</p>',
+      directives: [SomeDirective]
+    })];
+  }});
+Object.defineProperty(CompWithAncestor, "parameters", {get: function() {
+    return [[SomeDirective, new Ancestor()]];
   }});
 class SomeViewport {
   constructor(container) {

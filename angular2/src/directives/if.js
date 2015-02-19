@@ -19,7 +19,7 @@ export class If {
 Object.defineProperty(If, "annotations", {get: function() {
     return [new Viewport({
       selector: '[if]',
-      bind: {'if': 'condition'}
+      bind: {'condition': 'if'}
     })];
   }});
 Object.defineProperty(If, "parameters", {get: function() {

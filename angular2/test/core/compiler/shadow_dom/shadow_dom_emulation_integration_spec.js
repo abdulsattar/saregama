@@ -6,7 +6,6 @@ import {describe,
   ddescribe,
   iit,
   el} from 'angular2/test_lib';
-import {DOM} from 'angular2/src/facade/dom';
 import {StringMapWrapper,
   MapWrapper,
   List} from 'angular2/src/facade/collection';
@@ -17,6 +16,7 @@ import {Lexer,
   Parser,
   ChangeDetector,
   dynamicChangeDetection} from 'angular2/change_detection';
+import {ExceptionHandler} from 'angular2/src/core/exception_handler';
 import {Compiler,
   CompilerCache} from 'angular2/src/core/compiler/compiler';
 import {LifeCycle} from 'angular2/src/core/life_cycle/life_cycle';
@@ -50,7 +50,7 @@ export function main() {
             directives: directives
           }));
           compiler.compile(MyComp).then(createView).then((view) => {
-            var lc = new LifeCycle(view.changeDetector, false);
+            var lc = new LifeCycle(new ExceptionHandler(), view.changeDetector, false);
             assertions(view, lc);
           });
         }

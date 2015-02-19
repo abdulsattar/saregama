@@ -29,14 +29,15 @@ var PROTOS_ACCESSOR = "this.protos";
 var CHANGE_LOCAL = "change";
 var CHANGES_LOCAL = "changes";
 var TEMP_LOCAL = "temp";
+var PIPE_REGISTRY_ACCESSOR = "this.pipeRegistry";
 function typeTemplate(type, cons, detectChanges, setContext) {
   return `
 ${cons}
 ${detectChanges}
 ${setContext};
 
-return function(dispatcher, formatters) {
-  return new ${type}(dispatcher, formatters, protos);
+return function(dispatcher, formatters, pipeRegistry) {
+  return new ${type}(dispatcher, formatters, pipeRegistry, protos);
 }
 `;
 }
@@ -45,10 +46,11 @@ Object.defineProperty(typeTemplate, "parameters", {get: function() {
   }});
 function constructorTemplate(type, fieldsDefinitions) {
   return `
-var ${type} = function ${type}(dispatcher, formatters, protos) {
+var ${type} = function ${type}(dispatcher, formatters, pipeRegistry, protos) {
 ${ABSTRACT_CHANGE_DETECTOR}.call(this);
 ${DISPATCHER_ACCESSOR} = dispatcher;
 ${FORMATTERS_ACCESSOR} = formatters;
+${PIPE_REGISTRY_ACCESSOR} = pipeRegistry;
 ${PROTOS_ACCESSOR} = protos;
 ${fieldsDefinitions}
 }
@@ -106,19 +108,23 @@ if (${CHANGES_LOCAL} && ${CHANGES_LOCAL}.length > 0) {
 Object.defineProperty(notifyTemplate, "parameters", {get: function() {
     return [[assert.type.number]];
   }});
-function structuralCheckTemplate(selfIndex, field, context, notify) {
+function pipeCheckTemplate(context, pipe, value, change, addRecord, notify) {
   return `
-${CHANGE_LOCAL} = ${UTIL}.structuralCheck(${field}, ${context});
-if (${CHANGE_LOCAL}) {
-  ${CHANGES_LOCAL} = ${UTIL}.addRecord(${CHANGES_LOCAL},
-    ${UTIL}.changeRecord(${PROTOS_ACCESSOR}[${selfIndex}].bindingMemento, ${CHANGE_LOCAL}));
-  ${field} = ${CHANGE_LOCAL}.currentValue;
+if (${pipe} === ${UTIL}.unitialized() || !${pipe}.supports(${context})) {
+  ${pipe} = ${PIPE_REGISTRY_ACCESSOR}.get('[]', ${context});
+}
+
+${CHANGE_LOCAL} = ${pipe}.transform(${context});
+if (! ${UTIL}.noChangeMarker(${CHANGE_LOCAL})) {
+  ${value} = ${CHANGE_LOCAL};
+  ${change} = true;
+  ${addRecord}
 }
 ${notify}
 `;
 }
-Object.defineProperty(structuralCheckTemplate, "parameters", {get: function() {
-    return [[assert.type.number], [assert.type.string], [assert.type.string], [assert.type.string]];
+Object.defineProperty(pipeCheckTemplate, "parameters", {get: function() {
+    return [[assert.type.string], [assert.type.string], [assert.type.string], [assert.type.string], [assert.type.string], [assert.type.string]];
   }});
 function referenceCheckTemplate(assignment, newValue, oldValue, change, addRecord, notify) {
   return `
@@ -193,6 +199,7 @@ export class ChangeDetectorJITGenerator {
     this.localNames = this.getLocalNames(records);
     this.changeNames = this.getChangeNames(this.localNames);
     this.fieldNames = this.getFieldNames(this.localNames);
+    this.pipeNames = this.getPipeNames(this.localNames);
   }
   getLocalNames(records) {
     var index = 0;
@@ -208,12 +215,22 @@ export class ChangeDetectorJITGenerator {
   getFieldNames(localNames) {
     return localNames.map((n) => `this.${n}`);
   }
+  getPipeNames(localNames) {
+    return localNames.map((n) => `this.${n}_pipe`);
+  }
   generate() {
     var text = typeTemplate(this.typeName, this.genConstructor(), this.genDetectChanges(), this.genSetContext());
     return new Function('AbstractChangeDetector', 'ChangeDetectionUtil', 'ContextWithVariableBindings', 'protos', text)(AbstractChangeDetector, ChangeDetectionUtil, ContextWithVariableBindings, this.records);
   }
   genConstructor() {
-    return constructorTemplate(this.typeName, fieldDefinitionsTemplate(this.fieldNames));
+    var fields = [];
+    fields = fields.concat(this.fieldNames);
+    this.records.forEach((r) => {
+      if (r.mode === RECORD_TYPE_STRUCTURAL_CHECK) {
+        fields.push(this.pipeNames[r.selfIndex]);
+      }
+    });
+    return constructorTemplate(this.typeName, fieldDefinitionsTemplate(fields));
   }
   genSetContext() {
     return setContextTemplate(this.typeName);
@@ -233,16 +250,21 @@ export class ChangeDetectorJITGenerator {
     return changeDefinitionsTemplate(this.changeNames);
   }
   genRecord(r) {
-    if (r.mode == RECORD_TYPE_STRUCTURAL_CHECK) {
-      return this.getStructuralCheck(r);
+    if (r.mode === RECORD_TYPE_STRUCTURAL_CHECK) {
+      return this.genPipeCheck(r);
     } else {
       return this.genReferenceCheck(r);
     }
   }
-  getStructuralCheck(r) {
-    var field = this.fieldNames[r.selfIndex];
+  genPipeCheck(r) {
     var context = this.localNames[r.contextIndex];
-    return structuralCheckTemplate(r.selfIndex - 1, field, context, this.genNotify(r));
+    var pipe = this.pipeNames[r.selfIndex];
+    var newValue = this.localNames[r.selfIndex];
+    var oldValue = this.fieldNames[r.selfIndex];
+    var change = this.changeNames[r.selfIndex];
+    var addRecord = addSimpleChangeRecordTemplate(r.selfIndex - 1, oldValue, newValue);
+    var notify = this.genNotify(r);
+    return pipeCheckTemplate(context, pipe, newValue, change, addRecord, notify);
   }
   genReferenceCheck(r) {
     var newValue = this.localNames[r.selfIndex];
@@ -327,10 +349,13 @@ Object.defineProperty(ChangeDetectorJITGenerator.prototype.getChangeNames, "para
 Object.defineProperty(ChangeDetectorJITGenerator.prototype.getFieldNames, "parameters", {get: function() {
     return [[assert.genericType(List, String)]];
   }});
+Object.defineProperty(ChangeDetectorJITGenerator.prototype.getPipeNames, "parameters", {get: function() {
+    return [[assert.genericType(List, String)]];
+  }});
 Object.defineProperty(ChangeDetectorJITGenerator.prototype.genRecord, "parameters", {get: function() {
     return [[ProtoRecord]];
   }});
-Object.defineProperty(ChangeDetectorJITGenerator.prototype.getStructuralCheck, "parameters", {get: function() {
+Object.defineProperty(ChangeDetectorJITGenerator.prototype.genPipeCheck, "parameters", {get: function() {
     return [[ProtoRecord]];
   }});
 Object.defineProperty(ChangeDetectorJITGenerator.prototype.genReferenceCheck, "parameters", {get: function() {

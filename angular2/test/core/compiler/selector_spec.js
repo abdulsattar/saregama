@@ -11,7 +11,6 @@ import {CssSelector} from 'angular2/src/core/compiler/selector';
 import {List,
   ListWrapper,
   MapWrapper} from 'angular2/src/facade/collection';
-import {DOM} from 'angular2/src/facade/dom';
 export function main() {
   describe('SelectorMatcher', () => {
     var matcher,

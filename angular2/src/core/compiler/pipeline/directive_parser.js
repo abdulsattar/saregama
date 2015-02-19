@@ -12,7 +12,6 @@ import {Component,
 import {CompileStep} from './compile_step';
 import {CompileElement} from './compile_element';
 import {CompileControl} from './compile_control';
-import {ShadowDomStrategy} from '../shadow_dom_strategy';
 export class DirectiveParser extends CompileStep {
   constructor(directives) {
     super();

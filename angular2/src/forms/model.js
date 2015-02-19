@@ -1,4 +1,5 @@
-import {StringMapWrapper} from 'angular2/src/facade/collection';
+import {StringMapWrapper,
+  StringMap} from 'angular2/src/facade/collection';
 export class Control {
   constructor(value) {
     this.value = value;
@@ -19,6 +20,9 @@ export class ControlGroup {
     return res;
   }
 }
+Object.defineProperty(ControlGroup, "parameters", {get: function() {
+    return [[StringMap]];
+  }});
 
 //# sourceMappingURL=/Users/abdulsat/Projects/angular/modules/angular2/src/forms/model.map
 

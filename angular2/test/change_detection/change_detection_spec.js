@@ -18,25 +18,23 @@ import {List,
   StringMapWrapper} from 'angular2/src/facade/collection';
 import {Parser} from 'angular2/src/change_detection/parser/parser';
 import {Lexer} from 'angular2/src/change_detection/parser/lexer';
-import {reflector} from 'angular2/src/reflection/reflection';
-import {arrayChangesAsString,
-  kvChangesAsString} from './util';
 import {ChangeDispatcher,
   DynamicChangeDetector,
   ChangeDetectionError,
   ContextWithVariableBindings,
+  PipeRegistry,
+  NO_CHANGE,
   CHECK_ALWAYS,
   CHECK_ONCE,
   CHECKED,
   DETACHED} from 'angular2/change_detection';
 import {JitProtoChangeDetector,
   DynamicProtoChangeDetector} from 'angular2/src/change_detection/proto_change_detector';
-import {ChangeDetectionUtil} from 'angular2/src/change_detection/change_detection_util';
 export function main() {
   describe("change detection", () => {
     StringMapWrapper.forEach({
-      "dynamic": () => new DynamicProtoChangeDetector(),
-      "JIT": () => new JitProtoChangeDetector()
+      "dynamic": (registry = null) => new DynamicProtoChangeDetector(registry),
+      "JIT": (registry = null) => new JitProtoChangeDetector(registry)
     }, (createProtoChangeDetector, name) => {
       if (name == "JIT" && IS_DARTIUM)
         return ;
@@ -47,8 +45,8 @@ export function main() {
       Object.defineProperty(ast, "parameters", {get: function() {
           return [[assert.type.string], [assert.type.string]];
         }});
-      function createChangeDetector(memo, exp, context = null, formatters = null, structural = false) {
-        var pcd = createProtoChangeDetector();
+      function createChangeDetector(memo, exp, context = null, formatters = null, registry = null, structural = false) {
+        var pcd = createProtoChangeDetector(registry);
         pcd.addAst(ast(exp), memo, memo, structural);
         var dispatcher = new TestDispatcher();
         var cd = pcd.instantiate(dispatcher, formatters);
@@ -59,15 +57,15 @@ export function main() {
         };
       }
       Object.defineProperty(createChangeDetector, "parameters", {get: function() {
-          return [[assert.type.string], [assert.type.string], [], [], []];
+          return [[assert.type.string], [assert.type.string], [], [], [], []];
         }});
-      function executeWatch(memo, exp, context = null, formatters = null, content = false) {
-        var res = createChangeDetector(memo, exp, context, formatters, content);
+      function executeWatch(memo, exp, context = null, formatters = null, registry = null, content = false) {
+        var res = createChangeDetector(memo, exp, context, formatters, registry, content);
         res["changeDetector"].detectChanges();
         return res["dispatcher"].log;
       }
       Object.defineProperty(executeWatch, "parameters", {get: function() {
-          return [[assert.type.string], [assert.type.string], [], [], []];
+          return [[assert.type.string], [assert.type.string], [], [], [], []];
         }});
       describe(`${name} change detection`, () => {
         it('should do simple watching', () => {
@@ -249,98 +247,6 @@ export function main() {
             }
           });
         });
-        describe("collections", () => {
-          it("should not register a change when going from null to null", () => {
-            var context = new TestData(null);
-            var c = createChangeDetector('a', 'a', context, null, true);
-            var cd = c["changeDetector"];
-            var dispatcher = c["dispatcher"];
-            cd.detectChanges();
-            expect(dispatcher.log).toEqual([]);
-          });
-          it("should register changes when switching from null to collection and back", () => {
-            var context = new TestData(null);
-            var c = createChangeDetector('a', 'a', context, null, true);
-            var cd = c["changeDetector"];
-            var dispatcher = c["dispatcher"];
-            context.a = [0];
-            cd.detectChanges();
-            expect(dispatcher.log).toEqual(["a=" + arrayChangesAsString({
-              collection: ['0[null->0]'],
-              additions: ['0[null->0]']
-            })]);
-            dispatcher.clear();
-            context.a = null;
-            cd.detectChanges();
-            expect(dispatcher.log).toEqual(['a=null']);
-          });
-          describe("list", () => {
-            it("should support list changes", () => {
-              var context = new TestData([1, 2]);
-              expect(executeWatch("a", "a", context, null, true)).toEqual(["a=" + arrayChangesAsString({
-                collection: ['1[null->0]', '2[null->1]'],
-                additions: ['1[null->0]', '2[null->1]']
-              })]);
-            });
-            it("should handle reference changes", () => {
-              var context = new TestData([1, 2]);
-              var objs = createChangeDetector("a", "a", context, null, true);
-              var cd = objs["changeDetector"];
-              var dispatcher = objs["dispatcher"];
-              cd.detectChanges();
-              dispatcher.clear();
-              context.a = [2, 1];
-              cd.detectChanges();
-              expect(dispatcher.log).toEqual(["a=" + arrayChangesAsString({
-                collection: ['2[1->0]', '1[0->1]'],
-                previous: ['1[0->1]', '2[1->0]'],
-                moves: ['2[1->0]', '1[0->1]']
-              })]);
-            });
-          });
-          describe("map", () => {
-            it("should support map changes", () => {
-              var map = MapWrapper.create();
-              MapWrapper.set(map, "foo", "bar");
-              var context = new TestData(map);
-              expect(executeWatch("a", "a", context, null, true)).toEqual(["a=" + kvChangesAsString({
-                map: ['foo[null->bar]'],
-                additions: ['foo[null->bar]']
-              })]);
-            });
-            it("should handle reference changes", () => {
-              var map = MapWrapper.create();
-              MapWrapper.set(map, "foo", "bar");
-              var context = new TestData(map);
-              var objs = createChangeDetector("a", "a", context, null, true);
-              var cd = objs["changeDetector"];
-              var dispatcher = objs["dispatcher"];
-              cd.detectChanges();
-              dispatcher.clear();
-              context.a = MapWrapper.create();
-              MapWrapper.set(context.a, "bar", "foo");
-              cd.detectChanges();
-              expect(dispatcher.log).toEqual(["a=" + kvChangesAsString({
-                map: ['bar[null->foo]'],
-                previous: ['foo[bar->null]'],
-                additions: ['bar[null->foo]'],
-                removals: ['foo[bar->null]']
-              })]);
-            });
-          });
-          if (!IS_DARTIUM) {
-            describe("js objects", () => {
-              it("should support object changes", () => {
-                var map = {"foo": "bar"};
-                var context = new TestData(map);
-                expect(executeWatch("a", "a", context, null, true)).toEqual(["a=" + kvChangesAsString({
-                  map: ['foo[null->bar]'],
-                  additions: ['foo[null->bar]']
-                })]);
-              });
-            });
-          }
-        });
         describe("ContextWithVariableBindings", () => {
           it('should read a field from ContextWithVariableBindings', () => {
             var locals = new ContextWithVariableBindings(null, MapWrapper.createFromPairs([["key", "value"]]));
@@ -446,9 +352,99 @@ export function main() {
           expect(checkedChild.mode).toEqual(CHECK_ONCE);
         });
       });
+      describe("pipes", () => {
+        it("should support pipes", () => {
+          var registry = new FakePipeRegistry(() => new CountingPipe());
+          var ctx = new Person("Megatron");
+          var c = createChangeDetector("memo", "name", ctx, null, registry, true);
+          var cd = c["changeDetector"];
+          var dispatcher = c["dispatcher"];
+          cd.detectChanges();
+          expect(dispatcher.log).toEqual(['memo=Megatron state:0']);
+          dispatcher.clear();
+          cd.detectChanges();
+          expect(dispatcher.log).toEqual(['memo=Megatron state:1']);
+        });
+        it("should lookup pipes in the registry when the context is not supported", () => {
+          var registry = new FakePipeRegistry(() => new OncePipe());
+          var ctx = new Person("Megatron");
+          var c = createChangeDetector("memo", "name", ctx, null, registry, true);
+          var cd = c["changeDetector"];
+          cd.detectChanges();
+          expect(registry.numberOfLookups).toEqual(1);
+          ctx.name = "Optimus Prime";
+          cd.detectChanges();
+          expect(registry.numberOfLookups).toEqual(2);
+        });
+      });
+      it("should do nothing when returns NO_CHANGE", () => {
+        var registry = new FakePipeRegistry(() => new IdentityPipe());
+        var ctx = new Person("Megatron");
+        var c = createChangeDetector("memo", "name", ctx, null, registry, true);
+        var cd = c["changeDetector"];
+        var dispatcher = c["dispatcher"];
+        cd.detectChanges();
+        cd.detectChanges();
+        expect(dispatcher.log).toEqual(['memo=Megatron']);
+        ctx.name = "Optimus Prime";
+        dispatcher.clear();
+        cd.detectChanges();
+        expect(dispatcher.log).toEqual(['memo=Optimus Prime']);
+      });
     });
   });
 }
+class CountingPipe {
+  constructor() {
+    this.state = 0;
+  }
+  supports(newValue) {
+    return true;
+  }
+  transform(value) {
+    return `${value} state:${this.state++}`;
+  }
+}
+class OncePipe {
+  constructor() {
+    this.called = false;
+    ;
+  }
+  supports(newValue) {
+    return !this.called;
+  }
+  transform(value) {
+    this.called = true;
+    return value;
+  }
+}
+class IdentityPipe {
+  supports(newValue) {
+    return true;
+  }
+  transform(value) {
+    if (this.state === value) {
+      return NO_CHANGE;
+    } else {
+      this.state = value;
+      return value;
+    }
+  }
+}
+class FakePipeRegistry extends PipeRegistry {
+  constructor(factory) {
+    super({});
+    this.factory = factory;
+    this.numberOfLookups = 0;
+  }
+  get(type, obj) {
+    this.numberOfLookups++;
+    return this.factory();
+  }
+}
+Object.defineProperty(FakePipeRegistry.prototype.get, "parameters", {get: function() {
+    return [[assert.type.string], []];
+  }});
 class TestRecord {
 }
 class Person {

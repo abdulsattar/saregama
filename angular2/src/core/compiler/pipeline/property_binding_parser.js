@@ -3,7 +3,6 @@ import {isPresent,
   RegExpWrapper,
   BaseException} from 'angular2/src/facade/lang';
 import {MapWrapper} from 'angular2/src/facade/collection';
-import {TemplateElement} from 'angular2/src/facade/dom';
 import {Parser,
   AST,
   ExpressionWithSource} from 'angular2/change_detection';

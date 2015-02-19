@@ -10,7 +10,6 @@ import {XHRMock} from 'angular2/src/mock/xhr_mock';
 import {PromiseWrapper,
   Promise} from 'angular2/src/facade/async';
 import {isPresent} from 'angular2/src/facade/lang';
-import {ListWrapper} from 'angular2/src/facade/collection';
 export function main() {
   describe('XHRMock', () => {
     var xhr;

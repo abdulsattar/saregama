@@ -78,7 +78,7 @@ export function main() {
         }
         if (isPresent(current.element.getAttribute('viewroot'))) {
           current.isViewRoot = true;
-          current.inheritedProtoView = new ProtoView(current.element, new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+          current.inheritedProtoView = new ProtoView(current.element, new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
         } else if (isPresent(parent)) {
           current.inheritedProtoView = parent.inheritedProtoView;
         }
@@ -310,7 +310,7 @@ export function main() {
       });
       var results = pipeline.process(el('<div viewroot prop-binding directives></div>'));
       var pv = results[0].inheritedProtoView;
-      results[0].inheritedElementBinder.nestedProtoView = new ProtoView(el('<div></div>'), new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+      results[0].inheritedElementBinder.nestedProtoView = new ProtoView(el('<div></div>'), new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
       instantiateView(pv);
       evalContext.prop1 = 'a';
       evalContext.prop2 = 'b';
@@ -351,14 +351,12 @@ export function main() {
       expect(view.elementInjectors[0].get(SomeDecoratorDirectiveWithBinding).decorProp).toEqual('foo');
     });
     describe('errors', () => {
-      it('should throw if there is no element property bindings for a directive property binding', () => {
+      it('should not throw any errors if there is no element property bindings for a directive ' + 'property binding', () => {
         var pipeline = createPipeline({
           propertyBindings: MapWrapper.create(),
           directives: [SomeDecoratorDirectiveWithBinding]
         });
-        expect(() => {
-          pipeline.process(el('<div viewroot prop-binding directives>'));
-        }).toThrowError("No element binding found for property 'boundprop1' which is required by directive 'SomeDecoratorDirectiveWithBinding'");
+        pipeline.process(el('<div viewroot prop-binding directives>'));
       });
     });
   });
@@ -374,7 +372,7 @@ class SomeDecoratorDirectiveWithBinding {
   }
 }
 Object.defineProperty(SomeDecoratorDirectiveWithBinding, "annotations", {get: function() {
-    return [new Decorator({bind: {'boundprop1': 'decorProp'}})];
+    return [new Decorator({bind: {'decorProp': 'boundprop1'}})];
   }});
 class SomeDecoratorDirectiveWith2Bindings {
   constructor() {
@@ -384,8 +382,8 @@ class SomeDecoratorDirectiveWith2Bindings {
 }
 Object.defineProperty(SomeDecoratorDirectiveWith2Bindings, "annotations", {get: function() {
     return [new Decorator({bind: {
-        'boundprop1': 'decorProp',
-        'boundprop2': 'decorProp2'
+        'decorProp': 'boundprop1',
+        'decorProp2': 'boundprop2'
       }})];
   }});
 class SomeViewportDirective {}
@@ -398,7 +396,7 @@ class SomeViewportDirectiveWithBinding {
   }
 }
 Object.defineProperty(SomeViewportDirectiveWithBinding, "annotations", {get: function() {
-    return [new Viewport({bind: {'boundprop2': 'templProp'}})];
+    return [new Viewport({bind: {'templProp': 'boundprop2'}})];
   }});
 class SomeComponentDirective {}
 Object.defineProperty(SomeComponentDirective, "annotations", {get: function() {
@@ -410,7 +408,7 @@ class SomeComponentDirectiveWithBinding {
   }
 }
 Object.defineProperty(SomeComponentDirectiveWithBinding, "annotations", {get: function() {
-    return [new Component({bind: {'boundprop3': 'compProp'}})];
+    return [new Component({bind: {'compProp': 'boundprop3'}})];
   }});
 class Context {
   constructor() {

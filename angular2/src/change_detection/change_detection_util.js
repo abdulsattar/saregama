@@ -7,10 +7,9 @@ import {List,
   MapWrapper,
   StringMapWrapper} from 'angular2/src/facade/collection';
 import {ContextWithVariableBindings} from './parser/context_with_variable_bindings';
-import {ArrayChanges} from './array_changes';
-import {KeyValueChanges} from './keyvalue_changes';
 import {ProtoRecord} from './proto_change_detector';
 import {ExpressionChangedAfterItHasBeenChecked} from './exceptions';
+import {NO_CHANGE} from './pipes/pipe';
 import {ChangeRecord,
   ChangeDetector,
   CHECK_ALWAYS,
@@ -46,9 +45,6 @@ function _changeRecord(bindingMemento, change) {
   return s;
 }
 var _singleElementList = [null];
-function _isBlank(val) {
-  return isBlank(val) || val === uninitialized;
-}
 export class ChangeDetectionUtil {
   static unitialized() {
     return uninitialized;
@@ -164,28 +160,6 @@ export class ChangeDetectionUtil {
   static keyedAccess(obj, args) {
     return obj[args[0]];
   }
-  static structuralCheck(self, context) {
-    if (_isBlank(self) && _isBlank(context)) {
-      return null;
-    } else if (_isBlank(context)) {
-      return new SimpleChange(null, null);
-    }
-    if (_isBlank(self)) {
-      if (ArrayChanges.supports(context)) {
-        self = new ArrayChanges();
-      } else if (KeyValueChanges.supports(context)) {
-        self = new KeyValueChanges();
-      }
-    }
-    if (isBlank(self) || !self.supportsObj(context)) {
-      throw new BaseException(`Unsupported type (${context})`);
-    }
-    if (self.check(context)) {
-      return new SimpleChange(null, self);
-    } else {
-      return null;
-    }
-  }
   static findContext(name, c) {
     while (c instanceof ContextWithVariableBindings) {
       if (c.hasBinding(name)) {
@@ -194,6 +168,9 @@ export class ChangeDetectionUtil {
       c = c.parent;
     }
     return c;
+  }
+  static noChangeMarker(value) {
+    return value === NO_CHANGE;
   }
   static throwOnChange(proto, change) {
     throw new ExpressionChangedAfterItHasBeenChecked(proto, change);

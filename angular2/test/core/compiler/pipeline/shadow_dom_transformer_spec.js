@@ -18,9 +18,9 @@ export function main() {
     function createPipeline(selector, strategy, styleHost) {
       var component = new Component({selector: selector});
       var meta = new DirectiveMetadata(null, component);
-      var transformer = new ShadowDomTransformer(meta, strategy, styleHost);
-      transformer.clearCache();
-      return new CompilePipeline([transformer]);
+      var pipe = new ShadowDomTransformer(meta, strategy, styleHost);
+      pipe.clearCache();
+      return new CompilePipeline([pipe]);
     }
     Object.defineProperty(createPipeline, "parameters", {get: function() {
         return [[], [ShadowDomStrategy], []];

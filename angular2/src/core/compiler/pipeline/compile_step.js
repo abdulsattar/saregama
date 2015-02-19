@@ -1,6 +1,5 @@
 import {CompileElement} from './compile_element';
 import {CompileControl} from './compile_control';
-import {DirectiveMetadata} from '../directive_metadata';
 export class CompileStep {
   process(parent, current, control) {}
 }

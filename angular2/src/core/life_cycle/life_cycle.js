@@ -1,25 +1,22 @@
-import {FIELD,
-  print} from 'angular2/src/facade/lang';
 import {ChangeDetector} from 'angular2/change_detection';
 import {VmTurnZone} from 'angular2/src/core/zone/vm_turn_zone';
-import {ListWrapper} from 'angular2/src/facade/collection';
+import {ExceptionHandler} from 'angular2/src/core/exception_handler';
 import {isPresent} from 'angular2/src/facade/lang';
 export class LifeCycle {
-  constructor(changeDetector = null, enforceNoNewChanges = false) {
+  constructor(exceptionHandler, changeDetector = null, enforceNoNewChanges = false) {
+    this._errorHandler = (exception, stackTrace) => {
+      exceptionHandler.call(exception, stackTrace);
+      throw exception;
+    };
     this._changeDetector = changeDetector;
     this._enforceNoNewChanges = enforceNoNewChanges;
   }
   registerWith(zone, changeDetector = null) {
-    var errorHandler = (exception, stackTrace) => {
-      var longStackTrace = ListWrapper.join(stackTrace, "\n\n-----async gap-----\n");
-      print(`${exception}\n\n${longStackTrace}`);
-      throw exception;
-    };
     if (isPresent(changeDetector)) {
       this._changeDetector = changeDetector;
     }
     zone.initCallbacks({
-      onErrorHandler: errorHandler,
+      onErrorHandler: this._errorHandler,
       onTurnDone: () => this.tick()
     });
   }
@@ -31,7 +28,7 @@ export class LifeCycle {
   }
 }
 Object.defineProperty(LifeCycle, "parameters", {get: function() {
-    return [[ChangeDetector], [assert.type.boolean]];
+    return [[ExceptionHandler], [ChangeDetector], [assert.type.boolean]];
   }});
 Object.defineProperty(LifeCycle.prototype.registerWith, "parameters", {get: function() {
     return [[VmTurnZone], [ChangeDetector]];

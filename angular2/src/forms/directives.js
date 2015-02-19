@@ -113,7 +113,7 @@ Object.defineProperty(ControlNameDirective, "annotations", {get: function() {
       lifecycle: [onChange],
       selector: '[control-name]',
       bind: {
-        'control-name': 'controlName',
+        'controlName': 'control-name',
         'type': 'type'
       }
     })];
@@ -134,7 +134,7 @@ Object.defineProperty(ControlDirective, "annotations", {get: function() {
       lifecycle: [onChange],
       selector: '[control]',
       bind: {
-        'control': 'controlName',
+        'controlName': 'control',
         'type': 'type'
       }
     })];
@@ -161,7 +161,7 @@ export class ControlGroupDirective extends ControlGroupDirectiveBase {
 Object.defineProperty(ControlGroupDirective, "annotations", {get: function() {
     return [new Decorator({
       selector: '[control-group]',
-      bind: {'control-group': 'controlGroup'}
+      bind: {'controlGroup': 'control-group'}
     })];
   }});
 Object.defineProperty(Object.getOwnPropertyDescriptor(ControlGroupDirective.prototype, "controlGroup").set, "parameters", {get: function() {
@@ -206,7 +206,7 @@ export class NewControlGroupDirective extends ControlGroupDirectiveBase {
 Object.defineProperty(NewControlGroupDirective, "annotations", {get: function() {
     return [new Component({
       selector: '[new-control-group]',
-      bind: {'new-control-group': 'initData'}
+      bind: {'initData': 'new-control-group'}
     }), new Template({inline: '<content>'})];
   }});
 Object.defineProperty(NewControlGroupDirective.prototype.addDirective, "parameters", {get: function() {

@@ -25,7 +25,6 @@ import {Lexer,
   Parser,
   DynamicProtoChangeDetector,
   ChangeDetector} from 'angular2/change_detection';
-import {Template} from 'angular2/src/core/annotations/template';
 import {EventEmitter} from 'angular2/src/core/annotations/events';
 import {List,
   MapWrapper} from 'angular2/src/facade/collection';
@@ -80,7 +79,7 @@ export function main() {
     describe('instantiated from protoView', () => {
       var view;
       beforeEach(() => {
-        var pv = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(), null);
+        var pv = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(null), null);
         view = pv.instantiate(null, null);
       });
       it('should be dehydrated by default', () => {
@@ -94,7 +93,7 @@ export function main() {
         expect(view.hydrated()).toBe(false);
       });
       it('should use the view pool to reuse views', () => {
-        var pv = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(), null);
+        var pv = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(null), null);
         var fakeView = new FakeView();
         pv.returnToPool(fakeView);
         expect(pv.instantiate(null, null)).toBe(fakeView);
@@ -103,7 +102,7 @@ export function main() {
     describe('with locals', function() {
       var view;
       beforeEach(() => {
-        var pv = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(), null);
+        var pv = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(null), null);
         pv.bindVariable('context-foo', 'template-foo');
         view = createView(pv);
       });
@@ -131,7 +130,7 @@ export function main() {
           return el(useTemplateElement ? `<template>${html}</template>` : html);
         }
         it('should collect the root node in the ProtoView element', () => {
-          var pv = new ProtoView(templateAwareCreateElement('<div id="1"></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(templateAwareCreateElement('<div id="1"></div>'), new DynamicProtoChangeDetector(null), null);
           var view = pv.instantiate(null, null);
           view.hydrate(null, null, null);
           expect(view.nodes.length).toBe(1);
@@ -139,7 +138,7 @@ export function main() {
         });
         describe('collect elements with property bindings', () => {
           it('should collect property bindings on the root element if it has the ng-binding class', () => {
-            var pv = new ProtoView(templateAwareCreateElement('<div [prop]="a" class="ng-binding"></div>'), new DynamicProtoChangeDetector(), null);
+            var pv = new ProtoView(templateAwareCreateElement('<div [prop]="a" class="ng-binding"></div>'), new DynamicProtoChangeDetector(null), null);
             pv.bindElement(null);
             pv.bindElementProperty(parser.parseBinding('a', null), 'prop', reflector.setter('prop'));
             var view = pv.instantiate(null, null);
@@ -148,7 +147,7 @@ export function main() {
             expect(view.bindElements[0]).toBe(view.nodes[0]);
           });
           it('should collect property bindings on child elements with ng-binding class', () => {
-            var pv = new ProtoView(templateAwareCreateElement('<div><span></span><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(), null);
+            var pv = new ProtoView(templateAwareCreateElement('<div><span></span><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(null), null);
             pv.bindElement(null);
             pv.bindElementProperty(parser.parseBinding('b', null), 'a', reflector.setter('a'));
             var view = pv.instantiate(null, null);
@@ -159,7 +158,7 @@ export function main() {
         });
         describe('collect text nodes with bindings', () => {
           it('should collect text nodes under the root element', () => {
-            var pv = new ProtoView(templateAwareCreateElement('<div class="ng-binding">{{}}<span></span>{{}}</div>'), new DynamicProtoChangeDetector(), null);
+            var pv = new ProtoView(templateAwareCreateElement('<div class="ng-binding">{{}}<span></span>{{}}</div>'), new DynamicProtoChangeDetector(null), null);
             pv.bindElement(null);
             pv.bindTextNode(0, parser.parseBinding('a', null));
             pv.bindTextNode(2, parser.parseBinding('b', null));
@@ -170,7 +169,7 @@ export function main() {
             expect(view.textNodes[1]).toBe(view.nodes[0].childNodes[2]);
           });
           it('should collect text nodes with bindings on child elements with ng-binding class', () => {
-            var pv = new ProtoView(templateAwareCreateElement('<div><span> </span><span class="ng-binding">{{}}</span></div>'), new DynamicProtoChangeDetector(), null);
+            var pv = new ProtoView(templateAwareCreateElement('<div><span> </span><span class="ng-binding">{{}}</span></div>'), new DynamicProtoChangeDetector(null), null);
             pv.bindElement(null);
             pv.bindTextNode(0, parser.parseBinding('b', null));
             var view = pv.instantiate(null, null);
@@ -186,7 +185,7 @@ export function main() {
       describe('inplace instantiation', () => {
         it('should be supported.', () => {
           var template = el('<div></div>');
-          var pv = new ProtoView(template, new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+          var pv = new ProtoView(template, new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
           pv.instantiateInPlace = true;
           var view = pv.instantiate(null, null);
           view.hydrate(null, null, null);
@@ -194,7 +193,7 @@ export function main() {
         });
         it('should be off by default.', () => {
           var template = el('<div></div>');
-          var view = new ProtoView(template, new DynamicProtoChangeDetector(), new NativeShadowDomStrategy()).instantiate(null, null);
+          var view = new ProtoView(template, new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy()).instantiate(null, null);
           view.hydrate(null, null, null);
           expect(view.nodes[0]).not.toBe(template);
         });
@@ -207,7 +206,7 @@ export function main() {
       });
       describe('create ElementInjectors', () => {
         it('should use the directives of the ProtoElementInjector', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new ProtoElementInjector(null, 1, [SomeDirective]));
           var view = pv.instantiate(null, null);
           view.hydrate(null, null, null);
@@ -215,7 +214,7 @@ export function main() {
           expect(view.elementInjectors[0].get(SomeDirective) instanceof SomeDirective).toBe(true);
         });
         it('should use the correct parent', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(null), null);
           var protoParent = new ProtoElementInjector(null, 0, [SomeDirective]);
           pv.bindElement(protoParent);
           pv.bindElement(new ProtoElementInjector(protoParent, 1, [AnotherDirective]));
@@ -226,7 +225,7 @@ export function main() {
           expect(view.elementInjectors[1].parent).toBe(view.elementInjectors[0]);
         });
         it('should not pass the host injector when a parent injector exists', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(null), null);
           var protoParent = new ProtoElementInjector(null, 0, [SomeDirective]);
           pv.bindElement(protoParent);
           var testProtoElementInjector = new TestProtoElementInjector(protoParent, 1, [AnotherDirective]);
@@ -239,7 +238,7 @@ export function main() {
           expect(testProtoElementInjector.hostElementInjector).toBeNull();
         });
         it('should pass the host injector when there is no parent injector', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new ProtoElementInjector(null, 0, [SomeDirective]));
           var testProtoElementInjector = new TestProtoElementInjector(null, 1, [AnotherDirective]);
           pv.bindElement(testProtoElementInjector);
@@ -252,7 +251,7 @@ export function main() {
       });
       describe('collect root element injectors', () => {
         it('should collect a single root element injector', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(null), null);
           var protoParent = new ProtoElementInjector(null, 0, [SomeDirective]);
           pv.bindElement(protoParent);
           pv.bindElement(new ProtoElementInjector(protoParent, 1, [AnotherDirective]));
@@ -262,7 +261,7 @@ export function main() {
           expect(view.rootElementInjectors[0].get(SomeDirective) instanceof SomeDirective).toBe(true);
         });
         it('should collect multiple root element injectors', () => {
-          var pv = new ProtoView(el('<div><span class="ng-binding"></span><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div><span class="ng-binding"></span><span class="ng-binding"></span></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new ProtoElementInjector(null, 1, [SomeDirective]));
           pv.bindElement(new ProtoElementInjector(null, 2, [AnotherDirective]));
           var view = pv.instantiate(null, null);
@@ -275,7 +274,7 @@ export function main() {
       describe('with component views', () => {
         var ctx;
         function createComponentWithSubPV(subProtoView) {
-          var pv = new ProtoView(el('<cmp class="ng-binding"></cmp>'), new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+          var pv = new ProtoView(el('<cmp class="ng-binding"></cmp>'), new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
           var binder = pv.bindElement(new ProtoElementInjector(null, 0, [SomeComponent], true));
           binder.componentDirective = someComponentDirective;
           binder.nestedProtoView = subProtoView;
@@ -288,14 +287,14 @@ export function main() {
           return view;
         }
         it('should expose component services to the component', () => {
-          var subpv = new ProtoView(el('<span></span>'), new DynamicProtoChangeDetector(), null);
+          var subpv = new ProtoView(el('<span></span>'), new DynamicProtoChangeDetector(null), null);
           var pv = createComponentWithSubPV(subpv);
           var view = createNestedView(pv);
           var comp = view.rootElementInjectors[0].get(SomeComponent);
           expect(comp.service).toBeAnInstanceOf(SomeService);
         });
         it('should expose component services and component instance to directives in the shadow Dom', () => {
-          var subpv = new ProtoView(el('<div dec class="ng-binding">hello shadow dom</div>'), new DynamicProtoChangeDetector(), null);
+          var subpv = new ProtoView(el('<div dec class="ng-binding">hello shadow dom</div>'), new DynamicProtoChangeDetector(null), null);
           subpv.bindElement(new ProtoElementInjector(null, 0, [ServiceDependentDecorator]));
           var pv = createComponentWithSubPV(subpv);
           var view = createNestedView(pv);
@@ -311,7 +310,7 @@ export function main() {
           view.elementInjectors.forEach((inj) => expect(inj.hasInstances()).toBe(false));
         }
         it('dehydration should dehydrate child component views too', () => {
-          var subpv = new ProtoView(el('<div dec class="ng-binding">hello shadow dom</div>'), new DynamicProtoChangeDetector(), null);
+          var subpv = new ProtoView(el('<div dec class="ng-binding">hello shadow dom</div>'), new DynamicProtoChangeDetector(null), null);
           subpv.bindElement(new ProtoElementInjector(null, 0, [ServiceDependentDecorator]));
           var pv = createComponentWithSubPV(subpv);
           var view = createNestedView(pv);
@@ -321,14 +320,14 @@ export function main() {
           view.componentChildViews.forEach((view) => expectViewHasNoDirectiveInstances(view));
         });
         it('should create shadow dom (Native Strategy)', () => {
-          var subpv = new ProtoView(el('<span>hello shadow dom</span>'), new DynamicProtoChangeDetector(), null);
+          var subpv = new ProtoView(el('<span>hello shadow dom</span>'), new DynamicProtoChangeDetector(null), null);
           var pv = createComponentWithSubPV(subpv);
           var view = createNestedView(pv);
           expect(view.nodes[0].shadowRoot.childNodes[0].childNodes[0].nodeValue).toEqual('hello shadow dom');
         });
         it('should emulate shadow dom (Emulated Strategy)', () => {
-          var subpv = new ProtoView(el('<span>hello shadow dom</span>'), new DynamicProtoChangeDetector(), null);
-          var pv = new ProtoView(el('<cmp class="ng-binding"></cmp>'), new DynamicProtoChangeDetector(), new EmulatedShadowDomStrategy());
+          var subpv = new ProtoView(el('<span>hello shadow dom</span>'), new DynamicProtoChangeDetector(null), null);
+          var pv = new ProtoView(el('<cmp class="ng-binding"></cmp>'), new DynamicProtoChangeDetector(null), new EmulatedShadowDomStrategy());
           var binder = pv.bindElement(new ProtoElementInjector(null, 0, [SomeComponent], true));
           binder.componentDirective = new DirectiveMetadataReader().read(SomeComponent);
           binder.nestedProtoView = subpv;
@@ -338,8 +337,8 @@ export function main() {
       });
       describe('with template views', () => {
         function createViewWithViewport() {
-          var templateProtoView = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(), null);
-          var pv = new ProtoView(el('<someTmpl class="ng-binding"></someTmpl>'), new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+          var templateProtoView = new ProtoView(el('<div id="1"></div>'), new DynamicProtoChangeDetector(null), null);
+          var pv = new ProtoView(el('<someTmpl class="ng-binding"></someTmpl>'), new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
           var binder = pv.bindElement(new ProtoElementInjector(null, 0, [SomeViewport]));
           binder.viewportDirective = someViewportDirective;
           binder.nestedProtoView = templateProtoView;
@@ -377,7 +376,7 @@ export function main() {
           DOM.dispatchEvent(el, dispatchedEvent);
         }
         function createProtoView() {
-          var pv = new ProtoView(el('<div class="ng-binding"><div></div></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"><div></div></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new TestProtoElementInjector(null, 0, []));
           pv.bindEvent('click', parser.parseBinding('callMe($event)', null));
           return pv;
@@ -400,7 +399,7 @@ export function main() {
           expect(called).toEqual(0);
         });
         it('should support custom event emitters', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"><div></div></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"><div></div></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new TestProtoElementInjector(null, 0, [EventEmitterDirective]));
           pv.bindEvent('click', parser.parseBinding('callMe($event)', null));
           createViewAndContext(pv);
@@ -423,7 +422,7 @@ export function main() {
           cd = view.changeDetector;
         }
         it('should consume text node changes', () => {
-          var pv = new ProtoView(el('<div class="ng-binding">{{}}</div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding">{{}}</div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(null);
           pv.bindTextNode(0, parser.parseBinding('foo', null));
           createViewAndChangeDetector(pv);
@@ -432,7 +431,7 @@ export function main() {
           expect(view.textNodes[0].nodeValue).toEqual('buz');
         });
         it('should consume element binding changes', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(null);
           pv.bindElementProperty(parser.parseBinding('foo', null), 'id', reflector.setter('id'));
           createViewAndChangeDetector(pv);
@@ -441,7 +440,7 @@ export function main() {
           expect(view.bindElements[0].id).toEqual('buz');
         });
         it('should consume directive watch expression change', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new ProtoElementInjector(null, 0, [SomeDirective]));
           pv.bindDirectiveProperty(0, parser.parseBinding('foo', null), 'prop', reflector.setter('prop'), false);
           createViewAndChangeDetector(pv);
@@ -450,7 +449,7 @@ export function main() {
           expect(view.elementInjectors[0].get(SomeDirective).prop).toEqual('buz');
         });
         it('should notify a directive about changes after all its properties have been set', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new ProtoElementInjector(null, 0, [DirectiveBinding.createFromType(DirectiveImplementingOnChange, new Directive({lifecycle: [onChange]}))]));
           pv.bindDirectiveProperty(0, parser.parseBinding('a', null), 'a', reflector.setter('a'), false);
           pv.bindDirectiveProperty(0, parser.parseBinding('b', null), 'b', reflector.setter('b'), false);
@@ -462,7 +461,7 @@ export function main() {
           expect(directive.c).toEqual(300);
         });
         it('should provide a map of updated properties', () => {
-          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(), null);
+          var pv = new ProtoView(el('<div class="ng-binding"></div>'), new DynamicProtoChangeDetector(null), null);
           pv.bindElement(new ProtoElementInjector(null, 0, [DirectiveBinding.createFromType(DirectiveImplementingOnChange, new Directive({lifecycle: [onChange]}))]));
           pv.bindDirectiveProperty(0, parser.parseBinding('a', null), 'a', reflector.setter('a'), false);
           pv.bindDirectiveProperty(0, parser.parseBinding('b', null), 'b', reflector.setter('b'), false);
@@ -483,16 +482,16 @@ export function main() {
           pv;
       beforeEach(() => {
         element = DOM.createElement('div');
-        pv = new ProtoView(el('<div>hi</div>'), new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+        pv = new ProtoView(el('<div>hi</div>'), new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
       });
       it('should create the root component when instantiated', () => {
-        var rootProtoView = ProtoView.createRootProtoView(pv, element, someComponentDirective, new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+        var rootProtoView = ProtoView.createRootProtoView(pv, element, someComponentDirective, new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
         var view = rootProtoView.instantiate(null, null);
         view.hydrate(new Injector([]), null, null);
         expect(view.rootElementInjectors[0].get(SomeComponent)).not.toBe(null);
       });
       it('should inject the protoView into the shadowDom', () => {
-        var rootProtoView = ProtoView.createRootProtoView(pv, element, someComponentDirective, new DynamicProtoChangeDetector(), new NativeShadowDomStrategy());
+        var rootProtoView = ProtoView.createRootProtoView(pv, element, someComponentDirective, new DynamicProtoChangeDetector(null), new NativeShadowDomStrategy());
         var view = rootProtoView.instantiate(null, null);
         view.hydrate(new Injector([]), null, null);
         expect(element.shadowRoot.childNodes[0].childNodes[0].nodeValue).toEqual('hi');

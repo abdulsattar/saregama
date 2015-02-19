@@ -30,7 +30,6 @@ import {FIELD,
 import {Injector} from 'angular2/di';
 import {NgElement} from 'angular2/src/core/dom/element';
 import {ViewContainer} from './view_container';
-import {Content} from './shadow_dom_emulation/content_tag';
 import {LightDom,
   DestinationLightDom} from './shadow_dom_emulation/light_dom';
 import {ShadowDomStrategy} from './shadow_dom_strategy';
@@ -406,7 +405,7 @@ export class ProtoView {
     this.protoChangeDetector.addAst(expression, bindingMemento, directiveMemento, isContentWatch);
   }
   static createRootProtoView(protoView, insertionElement, rootComponentAnnotatedType, protoChangeDetector, shadowDomStrategy) {
-    DOM.addClass(insertionElement, 'ng-binding');
+    DOM.addClass(insertionElement, NG_BINDING_CLASS);
     var rootProtoView = new ProtoView(insertionElement, protoChangeDetector, shadowDomStrategy);
     rootProtoView.instantiateInPlace = true;
     var binder = rootProtoView.bindElement(new ProtoElementInjector(null, 0, [rootComponentAnnotatedType.type], true));

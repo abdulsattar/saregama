@@ -27,7 +27,6 @@ import {Decorator,
   Component,
   Viewport} from 'angular2/src/core/annotations/annotations';
 import {Template} from 'angular2/src/core/annotations/template';
-import {ViewContainer} from 'angular2/src/core/compiler/view_container';
 import {Foreach} from 'angular2/src/directives/foreach';
 export function main() {
   describe('foreach', () => {

@@ -20,10 +20,10 @@ import {Parser,
   ChangeDetection,
   dynamicChangeDetection,
   jitChangeDetection} from 'angular2/change_detection';
+import {ExceptionHandler} from './exception_handler';
 import {TemplateLoader} from './compiler/template_loader';
 import {TemplateResolver} from './compiler/template_resolver';
 import {DirectiveMetadataReader} from './compiler/directive_metadata_reader';
-import {DirectiveMetadata} from './compiler/directive_metadata';
 import {List,
   ListWrapper} from 'angular2/src/facade/collection';
 import {Promise,
@@ -38,7 +38,7 @@ import {EventManager} from 'angular2/src/core/events/event_manager';
 import {HammerGesturesPlugin} from 'angular2/src/core/events/hammer_gestures';
 import {Binding} from 'angular2/src/di/binding';
 var _rootInjector;
-var _rootBindings = [bind(Reflector).toValue(reflector), bind(ChangeDetection).toValue(dynamicChangeDetection), Compiler, CompilerCache, TemplateLoader, TemplateResolver, DirectiveMetadataReader, Parser, Lexer, bind(ShadowDomStrategy).toValue(new NativeShadowDomStrategy()), bind(XHR).toValue(new XHRImpl())];
+var _rootBindings = [bind(Reflector).toValue(reflector)];
 export var appViewToken = new OpaqueToken('AppView');
 export var appChangeDetectorToken = new OpaqueToken('AppChangeDetector');
 export var appElementToken = new OpaqueToken('AppElement');
@@ -61,10 +61,10 @@ function _injectorBindings(appComponentType) {
       view.hydrate(injector, null, new Object());
       return view;
     });
-  }, [ChangeDetection, Compiler, Injector, appElementToken, appComponentAnnotatedTypeToken, ShadowDomStrategy, EventManager]), bind(appChangeDetectorToken).toFactory((rootView) => rootView.changeDetector, [appViewToken]), bind(appComponentType).toFactory((rootView) => rootView.elementInjectors[0].getComponent(), [appViewToken]), bind(LifeCycle).toFactory(() => new LifeCycle(null, assertionsEnabled()), []), bind(EventManager).toFactory((zone) => {
+  }, [ChangeDetection, Compiler, Injector, appElementToken, appComponentAnnotatedTypeToken, ShadowDomStrategy, EventManager]), bind(appChangeDetectorToken).toFactory((rootView) => rootView.changeDetector, [appViewToken]), bind(appComponentType).toFactory((rootView) => rootView.elementInjectors[0].getComponent(), [appViewToken]), bind(LifeCycle).toFactory((exceptionHandler) => new LifeCycle(exceptionHandler, null, assertionsEnabled()), [ExceptionHandler]), bind(EventManager).toFactory((zone) => {
     var plugins = [new HammerGesturesPlugin()];
     return new EventManager(plugins, zone);
-  }, [VmTurnZone])];
+  }, [VmTurnZone]), bind(ShadowDomStrategy).toValue(new NativeShadowDomStrategy()), Compiler, CompilerCache, TemplateResolver, bind(ChangeDetection).toValue(dynamicChangeDetection), TemplateLoader, DirectiveMetadataReader, Parser, Lexer, ExceptionHandler, bind(XHR).toValue(new XHRImpl())];
 }
 function _createVmZone(givenReporter) {
   var defaultErrorReporter = (exception, stackTrace) => {

@@ -7,7 +7,6 @@ import {describe,
   el} from 'angular2/test_lib';
 import {TextInterpolationParser} from 'angular2/src/core/compiler/pipeline/text_interpolation_parser';
 import {CompilePipeline} from 'angular2/src/core/compiler/pipeline/compile_pipeline';
-import {DOM} from 'angular2/src/facade/dom';
 import {MapWrapper} from 'angular2/src/facade/collection';
 import {Lexer,
   Parser} from 'angular2/change_detection';

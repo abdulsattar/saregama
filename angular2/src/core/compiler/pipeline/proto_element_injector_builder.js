@@ -2,7 +2,6 @@ import {isPresent,
   isBlank} from 'angular2/src/facade/lang';
 import {ListWrapper,
   MapWrapper} from 'angular2/src/facade/collection';
-import {Key} from 'angular2/di';
 import {ProtoElementInjector,
   ComponentKeyMetaData,
   DirectiveBinding} from '../element_injector';
