@@ -1,4 +1,7 @@
 {
+  "name": "Saregama",
+  "version": "1.0.0",
+  "description": "Saregama Music Jukebox",
   "jspm": {
     "directories": {
       "lib": ".",
