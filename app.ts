@@ -5,7 +5,7 @@ import {Component, View, bootstrap} from 'angular2/angular2';
 })
 @View({
   template: `
-  <iframe src="https://www.youtube.com/embed/{{currentUrl}}" frameborder="0" allowfullscreen></iframe>
+  <iframe id="player" src="https://www.youtube.com/embed/{{currentUrl}}?enablejsapi=1" frameborder="0" allowfullscreen></iframe>
   <input #nexturl>
   <button (click)="play(nexturl.value)">Play</button>
   `
@@ -27,3 +27,10 @@ class Player {
 }
 
 bootstrap(Player);
+window.onYouTubeIframeAPIReady = function() {
+  var player;
+  var onPlayerReady = function() {
+    player.playVideo();
+  }
+  player = new YT.Player("player", {events: {onReady: onPlayerReady});
+}
